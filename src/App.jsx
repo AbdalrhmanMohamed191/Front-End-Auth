@@ -13,6 +13,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { ForgotPassword } from "./pages/ForgotPassword/ForgotPassword";
 import { ResetPassword } from "./pages/ResetPassword/ResetPassword";
 import { Home } from "./pages/Home/Home";
+import Profile from "./pages/Profile/Profile";
 
 export default function App() {
   const { isLoggedIn } = useSelector((state) => state.user);
@@ -50,6 +51,7 @@ export default function App() {
   }, [dispatch, token]);
 
   return (
+
     <div>
       {/* Global Navbar */}
       <Navbar />
@@ -59,13 +61,14 @@ export default function App() {
       {/* Routes */}
       <Container className="my-3 py-3">
         <Routes>
+
+          {/* Private Routes */}
           {isLoggedIn && (
             <>
-              {/* Profile Routes */}
               <Route path="/profile" Component={Profile} />
             </>
           )}
-
+          
           {/* Public Routes */}
           <Route path="/" Component={Home} />
           {!isLoggedIn && (
@@ -76,6 +79,8 @@ export default function App() {
 
               {/* OTP Routes */}
               <Route path="/verify-otp" Component={VerifyOTP} />
+
+          
 
               {/* Password Routes */}
               <Route path="/forgot-password" Component={ForgotPassword} />
