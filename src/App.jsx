@@ -60,14 +60,8 @@ export default function App() {
 
       {/* Routes */}
       <Container className="my-3 py-3">
-        <Routes>
 
-          {/* Private Routes */}
-          {isLoggedIn && (
-            <>
-              <Route path="/profile" Component={Profile} />
-            </>
-          )}
+        <Routes>
           
           {/* Public Routes */}
           <Route path="/" Component={Home} />
@@ -85,6 +79,13 @@ export default function App() {
               {/* Password Routes */}
               <Route path="/forgot-password" Component={ForgotPassword} />
               <Route path="/reset-password/:token" Component={ResetPassword} />
+            </>
+          )}
+
+          {/* Private Routes */}
+          {isLoggedIn && (
+            <>
+              <Route path="/profile" Component={Profile} />
             </>
           )}
         </Routes>

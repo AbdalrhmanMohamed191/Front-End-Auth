@@ -2,6 +2,8 @@ import { Navbar as BNavbar, Button, Container, Nav } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { clearUser } from "../../store/slices/userSlice";
+import { SlSocialTwitter } from "react-icons/sl";
+
 
 export const Navbar = () => {
   // Get User Logged Or Not
@@ -25,7 +27,9 @@ export const Navbar = () => {
     <BNavbar expand="md" bg="dark" data-bs-theme="dark">
       <Container>
         <BNavbar.Brand as={Link} to="/">
-          Node-118
+          <SlSocialTwitter size={28}  className="mb-1 me-2 text-danger" />
+          <span className="ms-2">TwitClone</span>
+
         </BNavbar.Brand>
 
         <BNavbar.Toggle />
