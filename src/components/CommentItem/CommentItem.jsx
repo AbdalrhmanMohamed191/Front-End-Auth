@@ -11,7 +11,7 @@ const CommentItem = ({ comment, onDelete, onEdit }) => {
   const [show, setShow] = useState(false);
   const [newComment, setNewComment] = useState('');
   const isDisabled = newComment.trim() === "";
-  const isOwner = user._id === comment.userId._id;
+  const isOwner = user?._id === comment.userId._id;
 
   async function handleDelete() {
     try {

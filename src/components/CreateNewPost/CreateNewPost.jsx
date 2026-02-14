@@ -10,30 +10,55 @@ const CreateNewPost = ({ posts, setPosts }) => {
 
   const disabled = files.length === 0 && !caption.trim();
 
-  async function handleCreateNewPost(ev) {
+  // async function handleCreateNewPost(ev) {
+  //   ev.preventDefault();
+  //   try {
+  //     const data = new FormData();
+  //     data.append('caption', caption);
+  //     for (let i = 0; i < files.length; i++) {
+  //       data.append('image', files[i]);
+  //     }
+  //     const token = localStorage.getItem('token');
+  //     const response = await api.post("/api/v1/posts/create", data, {
+  //       headers: { Authorization: `Bearer ${token}` },
+  //     });
+  //     console.log(response.data);
+  //     toast.success(response.data.message);
+  //     ev.target.reset();
+  //     setCaption('');
+  //     setFiles([]);
+
+  //     if (response.data.post) {
+  //       setPosts([response.data.post, ...posts]);
+  //     } else {
+  //       const postsResponse = await api.get("/api/v1/posts");
+  //       setPosts(postsResponse.data.posts);
+  //     }
+  //   } catch (error) {
+  //     console.log(error);
+  //     errorHandler(error);
+  //   }
+  // }
+
+     async function handleCreateNewPost(ev) {
     ev.preventDefault();
     try {
       const data = new FormData();
-      data.append('caption', caption);
+      data.append("caption", caption);
       for (let i = 0; i < files.length; i++) {
-        data.append('image', files[i]);
+        data.append("image", files[i]);
       }
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       const response = await api.post("/api/v1/posts/create", data, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log(response.data);
+
       toast.success(response.data.message);
       ev.target.reset();
-      setCaption('');
+      setCaption("");
       setFiles([]);
 
-      if (response.data.post) {
-        setPosts([response.data.post, ...posts]);
-      } else {
-        const postsResponse = await api.get("/api/v1/posts");
-        setPosts(postsResponse.data.posts);
-      }
+      setPosts([response?.data?.post, ...posts]);
     } catch (error) {
       console.log(error);
       errorHandler(error);

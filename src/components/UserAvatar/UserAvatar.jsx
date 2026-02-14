@@ -8,7 +8,7 @@ export const UserAvatar = ({ username, profileImage, createdAt, updatedAt }) => 
   return (
     <div className="d-flex align-items-center justify-content-between mb-3 p-2 border rounded-3">
       <div className="d-flex align-items-center gap-2">
-        <Image src={`${baseUrl}/${profileImage}`} roundedCircle width={50} height={50} />
+        <Image src={`${baseUrl}/${profileImage}`} roundedCircle width={"50px"} height={"50px"} style={{ objectFit: "cover" }} />
         <div>
           <h6 className="mb-0">{username}</h6>
           <small className="text-muted">

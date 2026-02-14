@@ -71,3 +71,72 @@ export const Navbar = () => {
     </BNavbar>
   );
 };
+
+
+// import { Navbar as BNavbar, Button, Container, Nav } from "react-bootstrap";
+// import { useDispatch, useSelector } from "react-redux";
+// import { Link, useNavigate } from "react-router-dom";
+// import { clearUser } from "../../store/slices/userSlice";
+// import { SlSocialTwitter } from "react-icons/sl";
+
+// export const Navbar = () => {
+//   const { isLoggedIn } = useSelector((state) => state.user);
+//   const dispatch = useDispatch();
+//   const navigate = useNavigate();
+
+//   const handleLogout = () => {
+//     dispatch(clearUser());
+//     localStorage.removeItem("token");
+//     navigate("/login");
+//   };
+
+//   return (
+//     <BNavbar expand="md" bg="dark" variant="dark" className="shadow-sm">
+//       <Container>
+//         {/* Logo */}
+//         <BNavbar.Brand as={Link} to="/" className="d-flex align-items-center">
+//           <SlSocialTwitter size={28} className="me-2 text-danger" />
+//           <span className="fw-bold fs-5">TwitClone</span>
+//         </BNavbar.Brand>
+
+//         <BNavbar.Toggle aria-controls="navbar-nav" />
+
+//         <BNavbar.Collapse id="navbar-nav">
+//           <Nav className="ms-auto align-items-center">
+//             <Nav.Link as={Link} to="/" className="mx-1">
+//               Home
+//             </Nav.Link>
+
+//             {!isLoggedIn && (
+//               <>
+//                 <Nav.Link as={Link} to="/login" className="mx-1">
+//                   Login
+//                 </Nav.Link>
+//                 <Nav.Link as={Link} to="/register" className="mx-1">
+//                   Register
+//                 </Nav.Link>
+//               </>
+//             )}
+
+//             {isLoggedIn && (
+//               <>
+//                 <Nav.Link as={Link} to="/profile" className="mx-1">
+//                   Profile
+//                 </Nav.Link>
+//                 <Button
+//                   variant="outline-danger"
+//                   size="sm"
+//                   className="ms-2"
+//                   onClick={handleLogout}
+//                 >
+//                   Logout
+//                 </Button>
+//               </>
+//             )}
+//           </Nav>
+//         </BNavbar.Collapse>
+//       </Container>
+//     </BNavbar>
+//   );
+// };
+
