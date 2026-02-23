@@ -15,9 +15,9 @@ const userSlice = createSlice({
     },
     clearUser: (state) => {
       state.isLoggedIn = false;
-      state.user = null;
-      
+      state.user = null; 
     },
+    
   },
 });
 

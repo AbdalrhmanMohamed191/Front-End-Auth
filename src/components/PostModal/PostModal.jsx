@@ -1,81 +1,13 @@
-// import React, { useEffect, useState } from "react";
-// import { Modal, Carousel, Button, Card, Form } from "react-bootstrap";
-// import { baseUrlHandler } from "../../utils/baseUrlHandler";
-// import { api } from "../../apis/api";
-// import { errorHandler } from "../../utils/errorHandler";
-// import CommentList from "../CommentList/CommentList";
-
-// const PostModal = ({ show, handleClose, post }) => {
-//   const [currentPost, setCurrentPost] = useState(post);
-//   const baseUrl = baseUrlHandler();
-
-//   useEffect(() => {
-//     setCurrentPost(post);
-//   }, [post]);
-
-//   async function handleLike() {
-//     try {
-//       const token = localStorage.getItem("token");
-//       const response = await api.put(
-//         `/api/v1/posts/${post._id}/like`,
-//         {},
-//         { headers: { Authorization: `Bearer ${token}` } }
-//       );
-//       setCurrentPost((prev) => ({ ...prev, likes: response.data.likesCount }));
-//     } catch (error) {
-//       errorHandler(error);
-//     }
-//   }
-
-//   if (!currentPost) return null;
-
-//   return (
-//     <Modal show={show} onHide={handleClose} size="lg" centered>
-//       <Modal.Header closeButton>
-//         <Modal.Title>Post</Modal.Title>
-//       </Modal.Header>
-//       <Modal.Body>
-//         <Carousel className="mb-3">
-//           {currentPost.images.map((img, idx) => (
-//             <Carousel.Item key={idx}>
-//               <img
-//                 src={`${baseUrl}/${img}`}
-//                 alt={`Slide ${idx + 1}`}
-//                 className="d-block w-100"
-//                 style={{ maxHeight: "500px", objectFit: "cover" }}
-//               />
-//             </Carousel.Item>
-//           ))}
-//         </Carousel>
-
-//         <div className="d-flex align-items-center gap-2 mb-2">
-//           <Button variant="outline-danger" onClick={handleLike}>
-//             ❤️ Like
-//           </Button>
-//           <span>{currentPost.likes} Likes</span>
-//         </div>
-
-//         <p>{currentPost.caption}</p>
-
-//         <CommentList post={currentPost} />
-//       </Modal.Body>
-//     </Modal>
-//   );
-// };
-
-// export default PostModal;
-
-
-
-
 import React, { useEffect, useState } from "react";
 import { Modal, Carousel, Button } from "react-bootstrap";
-import { baseUrlHandler } from "../../utils/baseUrlHandler";
 import { api } from "../../apis/api";
-import { errorHandler } from "../../utils/errorHandler";
+import { baseUrlHandler } from "../../utils/baseUrlHandler";
 import CommentList from "../CommentList/CommentList";
+import toast from "react-hot-toast";
 
-const PostModal = ({ show, handleClose, post }) => {
+const PostModal = ({ show, handleClose, post, currentUserId, onDelete }) => {
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [posts, setPosts] = useState([]);
   const [currentPost, setCurrentPost] = useState(post);
   const baseUrl = baseUrlHandler();
 
@@ -83,32 +15,69 @@ const PostModal = ({ show, handleClose, post }) => {
     setCurrentPost(post);
   }, [post]);
 
-  async function handleLike() {
+  const handleLike = async () => {
     try {
       const token = localStorage.getItem("token");
       const response = await api.put(
-        `/api/v1/posts/${post._id}/like`,
+        `/api/v1/posts/${currentPost._id}/like`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // تحديث binary like (0 أو 1)
-      setCurrentPost(prev => ({
-        ...prev,
-        likes: response.data.likesCount
-      }));
-    } catch (error) {
-      errorHandler(error);
+      setCurrentPost(prev => {
+        const likedByUser = response.data.likedByUser;
+        let newLikes = [...(prev.likes || [])];
+
+        if (likedByUser) {
+          if (!newLikes.includes(currentUserId)) newLikes.push(currentUserId);
+        } else {
+          newLikes = newLikes.filter(id => id !== currentUserId);
+        }
+
+        return { ...prev, likes: newLikes };
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  async function handleDeletePost() {
+    try {
+      const token = localStorage.getItem("token");
+      await api.delete(`/api/v1/posts/${currentPost._id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setPosts(prevPosts => {
+        return prevPosts.filter(post => post._id !== currentPost._id);
+      });
+
+      handleClose();
+      onDelete(currentPost._id);
+      toast.success("Post deleted successfully");
+
+    } catch (err) {
+      console.log(err);
     }
   }
 
   if (!currentPost) return null;
 
+  const isLiked = currentPost.likes?.includes(currentUserId);
+
   return (
     <Modal show={show} onHide={handleClose} size="lg" centered>
       <Modal.Header closeButton>
         <Modal.Title>Post</Modal.Title>
+        <Button
+          variant="danger"
+          onClick={() => handleDeletePost(true)}
+          className="ms-auto"
+        >
+          Delete
+        </Button>
+        
       </Modal.Header>
+
       <Modal.Body>
         <Carousel className="mb-3">
           {currentPost.images.map((img, idx) => (
@@ -124,10 +93,13 @@ const PostModal = ({ show, handleClose, post }) => {
         </Carousel>
 
         <div className="d-flex align-items-center gap-2 mb-2">
-          <Button variant="outline-danger" onClick={handleLike}>
-            ❤️ {currentPost.likes === 1 ? "Unlike" : "Like"}
+          <Button
+            variant={isLiked ? "danger" : "outline-danger"}
+            onClick={handleLike}
+          >
+            ❤️ {isLiked ? "Unlike" : "Like"}
           </Button>
-          <span>{currentPost.likes} Likes</span>
+          <span>{currentPost.likes?.length || 0} Likes</span>
         </div>
 
         <p>{currentPost.caption}</p>

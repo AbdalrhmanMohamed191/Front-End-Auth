@@ -1,135 +1,86 @@
-// import React, { useState } from 'react';
-// import { Button, Carousel, Card } from 'react-bootstrap';
-// import { baseUrlHandler } from '../../utils/baseUrlHandler';
-// import { errorHandler } from '../../utils/errorHandler';
-// import { api } from '../../apis/api';
-// import CommentList from '../CommentList/CommentList';
-// import { UserAvatar } from '../UserAvatar/UserAvatar';
-
-// const PostCard = ({ post }) => {
-//   const [currentPost, setCurrentPost] = useState(post);
-//   const baseUrl = baseUrlHandler();
-
-//   async function handleLike(ev) {
-//     ev.preventDefault();
-//     try {
-//       const postId = post._id;
-//       const token = localStorage.getItem('token');
-//       const response = await api.put(`/api/v1/posts/${postId}/like`, {}, {
-//         headers: { Authorization: `Bearer ${token}` },
-//       });
-//       setCurrentPost(prev => ({ ...prev, likes: response.data.likesCount }));
-//     } catch (error) {
-//       console.log(error);
-//       errorHandler(error);
-//     }
-//   }
-
-//   return (
-//     <Card className="mb-4 shadow-sm rounded-4" style={{ maxWidth: 600, margin: "0 auto" }}>
-//       <Card.Body>
-//         <UserAvatar
-//           username={currentPost.userId.username}
-//           profileImage={currentPost.userId.profileImage}
-//           createdAt={currentPost.createdAt}
-//           updatedAt={currentPost.updatedAt}
-//         />
-
-//         <Carousel className="mb-3 rounded-3 overflow-hidden">
-//           {currentPost.images.map((image, index) => (
-//             <Carousel.Item key={index}>
-//               <img
-//                 className="d-block w-100"
-//                 src={`${baseUrl}/${image}`}
-//                 alt={`Slide ${index + 1}`}
-//                 style={{ maxHeight: 400, objectFit: "cover" }}
-//               />
-//             </Carousel.Item>
-//           ))}
-//         </Carousel>
-
-//         <Card.Text className="mb-3">{currentPost.caption}</Card.Text>
-
-//         <Button variant="outline-danger" className="mb-2" onClick={handleLike}>
-//           ❤️ Love
-//         </Button>
-//         <p>{currentPost.likes} Loves</p>
-
-//         <CommentList post={currentPost} />
-//       </Card.Body>
-//     </Card>
-//   );
-// };
-
-// export default PostCard;
-
-
-
-
-
-
-import React, { useState } from 'react';
-import { Button, Carousel, Card } from 'react-bootstrap';
-import { baseUrlHandler } from '../../utils/baseUrlHandler';
-import { errorHandler } from '../../utils/errorHandler';
+import React, { useState, useEffect } from 'react';
+import { Card, Carousel, Button } from 'react-bootstrap';
 import { api } from '../../apis/api';
+import { baseUrlHandler } from '../../utils/baseUrlHandler';
 import CommentList from '../CommentList/CommentList';
 import { UserAvatar } from '../UserAvatar/UserAvatar';
 
-const PostCard = ({ post }) => {
+const PostCard = ({ post, currentUserId }) => {
   const [currentPost, setCurrentPost] = useState(post);
   const baseUrl = baseUrlHandler();
 
-  async function handleLike(ev) {
-    ev.preventDefault();
+  useEffect(() => {
+    setCurrentPost(post);
+  }, [post]);
+
+  const handleLike = async () => {
     try {
       const token = localStorage.getItem('token');
       const response = await api.put(
-        `/api/v1/posts/${post._id}/like`,
+        `/api/v1/posts/${currentPost._id}/like`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // تحديث binary like (0 أو 1)
-      setCurrentPost(prev => ({
-        ...prev,
-        likes: response.data.likesCount
-      }));
+      // تحديث اللايك لكل مستخدم وعدد اللايكات
+      setCurrentPost(prev => {
+        const likedByUser = response.data.likedByUser;
+        let newLikes = [...(prev.likes || [])];
+
+        if (likedByUser) {
+          // أضف المستخدم للمصفوفة إذا عمل لايك
+          if (!newLikes.includes(currentUserId)) newLikes.push(currentUserId);
+        } else {
+          // شيل المستخدم من المصفوفة إذا عمل ديس لايك
+          newLikes = newLikes.filter(id => id !== currentUserId);
+        }
+
+        return {
+          ...prev,
+          likes: newLikes,
+        };
+      });
     } catch (error) {
       console.log(error);
-      errorHandler(error);
     }
-  }
+  };
+
+  if (!currentPost) return null;
+
+  const isLiked = currentPost.likes?.includes(currentUserId);
 
   return (
     <Card className="mb-4 shadow-sm rounded-4" style={{ maxWidth: 600, margin: "0 auto" }}>
       <Card.Body>
         <UserAvatar
-          username={currentPost.userId.username}
-          profileImage={currentPost.userId.profileImage}
+          id={currentPost.userId?._id}
+          username={currentPost.userId?.username}
+          profileImage={currentPost.userId?.profileImage}
           createdAt={currentPost.createdAt}
-          updatedAt={currentPost.updatedAt}
         />
 
         <Carousel className="mb-3 rounded-3 overflow-hidden">
-          {currentPost.images.map((image, index) => (
-            <Carousel.Item key={index}>
+          {currentPost.images.map((image, idx) => (
+            <Carousel.Item key={idx}>
               <img
                 className="d-block w-100"
                 src={`${baseUrl}/${image}`}
-                alt={`Slide ${index + 1}`}
-                style={{ maxHeight: 700, objectFit: "cover" }}
+                alt={`Slide ${idx + 1}`}
+                style={{ maxHeight: 700, objectFit: 'cover' }}
               />
             </Carousel.Item>
           ))}
         </Carousel>
 
-        <Card.Text className="mb-3">{currentPost.caption}</Card.Text>
+        <Card.Text>{currentPost.caption}</Card.Text>
 
-        <Button variant="outline-danger" className="mb-2" onClick={handleLike}>
-          ❤️ {currentPost.likes === 1 ? "Unlike" : "Like"}
+        <Button
+          variant={isLiked ? "danger" : "outline-danger"}
+          onClick={handleLike}
+        >
+          ❤️ {isLiked ? "Unlike" : "Like"}
         </Button>
-        <p>{currentPost.likes} Likes</p>
+        <p>{currentPost.likes?.length || 0} Likes</p>
 
         <CommentList post={currentPost} />
       </Card.Body>

@@ -14,7 +14,8 @@ import { ForgotPassword } from "./pages/ForgotPassword/ForgotPassword";
 import { ResetPassword } from "./pages/ResetPassword/ResetPassword";
 import { Home } from "./pages/Home/Home";
 import Profile from "./pages/Profile/Profile";
-
+import UserProfile from "./components/UserProfile/UserProfile";
+import Connections from "./components/Connections/Connections";
 export default function App() {
   const { isLoggedIn } = useSelector((state) => state.user);
 
@@ -79,6 +80,7 @@ export default function App() {
               {/* Password Routes */}
               <Route path="/forgot-password" Component={ForgotPassword} />
               <Route path="/reset-password/:token" Component={ResetPassword} />
+
             </>
           )}
 
@@ -86,6 +88,8 @@ export default function App() {
           {isLoggedIn && (
             <>
               <Route path="/profile" Component={Profile} />
+              <Route path="/profile/:id" Component={UserProfile} /> 
+              <Route path="/user/:id/connections" Component={Connections} />
             </>
           )}
         </Routes>
