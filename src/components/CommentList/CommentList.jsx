@@ -1,68 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Card } from 'react-bootstrap';
-import { api } from '../../apis/api';
-import { errorHandler } from '../../utils/errorHandler';
-import AddComment from '../AddComment/AddComment';
-import CommentItem from '../CommentItem/CommentItem';
-
-
-const CommentList = ({ post }) => {
-  const [comments, setComments] = useState([]);
-  const postId = post._id;
-
-  useEffect(() => {
-    async function fetchComments() {
-      try {
-        const response = await api.get(`/api/v1/posts/${postId}/comments`);
-        setComments(response.data.comments || []);
-      } catch (error) {
-        console.log(error);
-        errorHandler(error);
-      }
-    }
-    fetchComments();
-  }, [postId]);
-
-  const renderComments = (parentId = null, level = 0) =>
-    comments
-      .filter(c => (c.parentComment ? c.parentComment === parentId : parentId === null))
-      .map(c => (
-        <CommentItem
-          key={c._id}
-          comment={c}
-          level={level}
-          onEdit={(updatedComment) => {
-            const exists = comments.find(x => x._id === updatedComment._id);
-            setComments(prev =>
-              exists
-                ? prev.map(x => x._id === updatedComment._id ? updatedComment : x)
-                : [...prev, updatedComment]
-            );
-          }}
-          onDelete={() => setComments(prev => prev.filter(x => x._id !== c._id))}
-        >
-          {renderComments(c._id, level + 1)}
-        </CommentItem>
-      ));
-
-  return (
-    <Card className="mt-3 rounded-3 bg-light p-2">
-      <AddComment
-        post={post}
-        onAddComment={(c) => setComments(prev => [...prev, c])}
-      />
-      {renderComments()}
-    </Card>
-  );
-};
-
-export default CommentList;
-
-
-
-
 // import React, { useEffect, useState } from 'react';
-// import { Card, Button, ListGroup } from 'react-bootstrap';
+// import { Card, Button } from 'react-bootstrap';
 // import { api } from '../../apis/api';
 // import { errorHandler } from '../../utils/errorHandler';
 // import AddComment from '../AddComment/AddComment';
@@ -70,59 +7,129 @@ export default CommentList;
 
 // const CommentList = ({ post }) => {
 //   const [comments, setComments] = useState([]);
-//   const postId = post._id;
+//   const [replyingTo, setReplyingTo] = useState(null);
+//   const [showComments, setShowComments] = useState(true);
 
 //   useEffect(() => {
 //     async function fetchComments() {
 //       try {
-//         const response = await api.get(`/api/v1/posts/${postId}/comments`);
-//         setComments(response.data.comments || []);
+//         const res = await api.get(`/api/v1/posts/${post._id}/comments`);
+//         setComments(res.data.comments || []);
 //       } catch (error) {
-//         console.log(error);
 //         errorHandler(error);
 //       }
 //     }
 //     fetchComments();
-//   }, [postId]);
-
-//   const renderComments = (parentId = null, level = 0) =>
-//     comments
-//       .filter(c => (c.parentComment ? c.parentComment === parentId : parentId === null))
-//       .map(c => (
-//         <CommentItem
-//           key={c._id}
-//           comment={c}
-//           level={level}
-//           onEdit={(updatedComment) => {
-//             const exists = comments.find(x => x._id === updatedComment._id);
-//             setComments(prev =>
-//               exists
-//                 ? prev.map(x => x._id === updatedComment._id ? updatedComment : x)
-//                 : [...prev, updatedComment]
-//             );
-//           }}
-//           onDelete={() => setComments(prev => prev.filter(x => x._id !== c._id))}
-//         >
-//           {renderComments(c._id, level + 1)}
-//         </CommentItem>
-//       ));
+//   }, [post._id]);
 
 //   return (
-//     <Card className="mt-3 shadow-sm rounded-3">
-//       <Card.Body>
-//         <Card.Title className="mb-3 text-primary">Comments</Card.Title>
+//     <Card className="mt-3 p-3">
+//       <AddComment
+//         post={post}
+//         onAddComment={(comment) => setComments(prev => [...prev, comment])}
+//       />
 
-//         <AddComment
-//           post={post}
-//           onAddComment={(c) => setComments(prev => [...prev, c])}
-//         />
+//       {/* زرار Hide/Show all Comments يظهر مرة واحدة فقط */}
+//       {comments.length > 0 && (
+//         <div className="mb-3">
+//           <Button
+//             variant="outline-primary"
+//             size="sm"
+//             className="rounded-pill px-3"
+//             onClick={() => setShowComments(prev => !prev)}
+//           >
+//             {showComments ? "Hide all comments" : `Show all comments (${comments.length})`}
+//           </Button>
+//         </div>
+//       )}
 
-//         <ListGroup variant="flush" className="mt-3">
-//           {renderComments()}
-//         </ListGroup>
-//       </Card.Body>
+//       {showComments &&
+//         comments.map(comment => (
+//           <CommentItem
+//             key={comment._id}
+//             comment={comment}
+//             replyingTo={replyingTo}
+//             onReplyClick={setReplyingTo}
+//             onEdit={(updatedComment) => {
+//               setComments(prev =>
+//                 prev.map(c => (c._id === updatedComment._id ? updatedComment : c))
+//               );
+//             }}
+//             onDelete={(deletedId) => {
+//               setComments(prev => prev.filter(c => c._id !== deletedId));
+//             }}
+//           />
+//         ))}
 //     </Card>
 //   );
 // };
 
 // export default CommentList;
+
+
+import React, { useEffect, useState } from 'react';
+import { Card, Button } from 'react-bootstrap';
+import { api } from '../../apis/api';
+import { errorHandler } from '../../utils/errorHandler';
+import AddComment from '../AddComment/AddComment';
+import CommentItem from '../CommentItem/CommentItem';
+
+const CommentList = ({ post }) => {
+  const [comments, setComments] = useState([]);
+  const [replyingTo, setReplyingTo] = useState(null);
+  const [showComments, setShowComments] = useState(true);
+
+  useEffect(() => {
+    async function fetchComments() {
+      try {
+        const res = await api.get(`/api/v1/posts/${post._id}/comments`);
+        setComments(res.data.comments || []);
+      } catch (error) {
+        errorHandler(error);
+      }
+    }
+    fetchComments();
+  }, [post._id]);
+
+  return (
+    <Card className="mt-3 p-3">
+      <AddComment
+        post={post}
+        onAddComment={(comment) => setComments(prev => [...prev, comment])}
+      />
+
+      {comments.length > 0 && (
+        <div className="mb-3">
+          <Button
+            variant="outline-primary"
+            size="sm"
+            className="rounded-pill px-3"
+            onClick={() => setShowComments(prev => !prev)}
+          >
+            {showComments ? "Hide all comments" : `Show all comments (${comments.length})`}
+          </Button>
+        </div>
+      )}
+
+      {showComments &&
+        comments.map(comment => (
+          <CommentItem
+            key={comment._id}
+            comment={comment}
+            replyingTo={replyingTo}
+            onReplyClick={setReplyingTo}
+            onEdit={(updatedComment) => {
+              setComments(prev =>
+                prev.map(c => (c._id === updatedComment._id ? updatedComment : c))
+              );
+            }}
+            onDelete={(deletedId) => {
+              setComments(prev => prev.filter(c => c._id !== deletedId));
+            }}
+          />
+        ))}
+    </Card>
+  );
+};
+
+export default CommentList;

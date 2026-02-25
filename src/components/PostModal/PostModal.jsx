@@ -41,24 +41,47 @@ const PostModal = ({ show, handleClose, post, currentUserId, onDelete }) => {
     }
   };
 
-  async function handleDeletePost() {
-    try {
-      const token = localStorage.getItem("token");
-      await api.delete(`/api/v1/posts/${currentPost._id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setPosts(prevPosts => {
-        return prevPosts.filter(post => post._id !== currentPost._id);
-      });
+  // async function handleDeletePost() {
+  //   try {
+  //     const token = localStorage.getItem("token");
+  //     await api.delete(`/api/v1/posts/${currentPost._id}`, {
+  //       headers: { Authorization: `Bearer ${token}` },
+  //     });
+  //     setPosts(prevPosts => {
+  //       const updatedPosts = prevPosts.filter(p => p._id !== currentPost._id);
+  //       return updatedPosts;
+  //     });
 
-      handleClose();
-      onDelete(currentPost._id);
-      toast.success("Post deleted successfully");
+  //     handleClose();
+  //     onDelete(currentPost._id);
+  //     toast.success("Post deleted successfully");
 
-    } catch (err) {
-      console.log(err);
+  //   } catch (err) {
+  //     console.log(err);
+  //   }
+  // }
+
+  // delete post with confirmation
+    async function handleDeletePost() {
+      try {
+        const token = localStorage.getItem("token");
+        await api.delete(`/api/v1/posts/${currentPost._id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setPosts(prevPosts => {
+          const updatedPosts = prevPosts.filter(p => p._id !== currentPost._id);
+          return updatedPosts;
+        });
+  
+        handleClose();
+        onDelete(currentPost._id);
+        toast.success("Post deleted successfully");
+  
+      } catch (err) {
+        console.log(err);
+      }
     }
-  }
+
 
   if (!currentPost) return null;
 
@@ -67,15 +90,7 @@ const PostModal = ({ show, handleClose, post, currentUserId, onDelete }) => {
   return (
     <Modal show={show} onHide={handleClose} size="lg" centered>
       <Modal.Header closeButton>
-        <Modal.Title>Post</Modal.Title>
-        <Button
-          variant="danger"
-          onClick={() => handleDeletePost(true)}
-          className="ms-auto"
-        >
-          Delete
-        </Button>
-        
+        <Modal.Title>Post</Modal.Title>  
       </Modal.Header>
 
       <Modal.Body>
@@ -83,7 +98,8 @@ const PostModal = ({ show, handleClose, post, currentUserId, onDelete }) => {
           {currentPost.images.map((img, idx) => (
             <Carousel.Item key={idx}>
               <img
-                src={`${baseUrl}/${img}`}
+                // src={img.startsWith("http") ? img : baseUrlHandler(img)}
+                src={img.startsWith("http") ? img : `${baseUrl}/${img}`}
                 alt={`Slide ${idx + 1}`}
                 className="d-block w-100"
                 style={{ maxHeight: "700px", objectFit: "cover" }}
@@ -106,8 +122,21 @@ const PostModal = ({ show, handleClose, post, currentUserId, onDelete }) => {
 
         <CommentList post={currentPost} />
       </Modal.Body>
+      <Modal.Footer>
+        
+        <Button variant="secondary" onClick={handleClose}>
+          Close
+        </Button>
+      </Modal.Footer>
     </Modal>
   );
 };
 
 export default PostModal;
+
+
+
+
+
+
+

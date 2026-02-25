@@ -49,7 +49,6 @@ const Profile = () => {
     fetchUserPosts();
   }, [user]);
 
-  const handleShow = () => setShow(true);
   const handleClose = () => setShow(false);
   const handleEditModalClose = () => setEditModal(false);
 
@@ -173,7 +172,10 @@ const Profile = () => {
           <div className="col-md-4 text-center mb-4">
             <div className="position-relative d-inline-block">
               <img
-                src={`${baseUrl}/${user.profileImage}`}
+                // src={`${baseUrl}/${user.profileImage}`}
+                // src={user.profileImage.startsWith("http") ? user.profileImage : baseUrlHandler(user.profileImage)}
+                src={user.profileImage.startsWith("http") ? user.profileImage : `${baseUrl}/${user.profileImage}`}
+                
                 alt="Profile"
                 className="rounded-circle border"
                 width="180"
@@ -224,6 +226,8 @@ const Profile = () => {
                 >
                   <img
                     src={`${baseUrl}/${post.images[0]}`}
+                    // src={post.images[0].startsWith("http") ? post.images[0] : baseUrlHandler(post.images[0])}
+
                     alt="Post"
                     style={{ position: "absolute", width: "100%", height: "100%", objectFit: "cover" }}
                   />

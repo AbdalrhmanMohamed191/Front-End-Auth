@@ -90,6 +90,7 @@ export default function App() {
               <Route path="/profile" Component={Profile} />
               <Route path="/profile/:id" Component={UserProfile} /> 
               <Route path="/user/:id/connections" Component={Connections} />
+              <Route path="/profile/:username" Component={UserProfile} /> 
             </>
           )}
         </Routes>

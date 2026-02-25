@@ -64,7 +64,10 @@ const PostCard = ({ post, currentUserId }) => {
             <Carousel.Item key={idx}>
               <img
                 className="d-block w-100"
-                src={`${baseUrl}/${image}`}
+                // src={`${baseUrl}/${image}`}
+                // src={image.startsWith("http") ? image : baseUrlHandler(image)}
+                 src={image.startsWith("http") ? image : `${baseUrl}/${image}`}
+
                 alt={`Slide ${idx + 1}`}
                 style={{ maxHeight: 700, objectFit: 'cover' }}
               />
@@ -73,15 +76,18 @@ const PostCard = ({ post, currentUserId }) => {
         </Carousel>
 
         <Card.Text>{currentPost.caption}</Card.Text>
-
-        <Button
+          <div 
+            className="d-flex align-items-center gap-3 mb-2"
+          >
+        <Button 
           variant={isLiked ? "danger" : "outline-danger"}
           onClick={handleLike}
         >
           ❤️ {isLiked ? "Unlike" : "Like"}
         </Button>
         <p>{currentPost.likes?.length || 0} Likes</p>
-
+          </div>
+        
         <CommentList post={currentPost} />
       </Card.Body>
     </Card>
