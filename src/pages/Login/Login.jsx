@@ -21,6 +21,7 @@ import {
   FaGoogle,
   FaTwitter,
 } from "react-icons/fa";
+import { GoogleLogin } from "@react-oauth/google";
 
 export const Login = () => {
   const [loading, setLoading] = useState(false);
@@ -64,6 +65,29 @@ export const Login = () => {
       setLoading(false);
     }
   }
+
+
+
+
+  const handleGoogleLogin = async (credentialResponse) => {
+    try {
+      const res = await api.post("/api/v1/auth/google-login", {
+        token: credentialResponse.credential,
+      });
+
+      // حفظ الـ token و الـ user فورًا
+      localStorage.setItem("token", res.data.token);
+      dispatch(setUser(res.data.user));
+
+      toast.success("Logged in with Google");
+      go("/"); // redirect للصفحة الرئيسية
+    } catch (err) {
+      console.error(err);
+      toast.error("Google login failed");
+    }
+  };
+
+
 
   if (loading) return <Loading />;
 
@@ -148,13 +172,27 @@ export const Login = () => {
                 <FaFacebookF />
               </Button>
 
-              <Button
-                variant="outline-danger"
-                className="rounded-circle p-2"
-                title="Login with Google"
-              >
-                <FaGoogle />
-              </Button>
+{/* Google */}
+              <GoogleLogin
+                onSuccess={handleGoogleLogin}
+                onError={() => toast.error("Google Login Failed")}
+                render={(renderProps) => (
+                  <Button
+                    onClick={renderProps.onClick}
+                    disabled={renderProps.disabled}
+                    className="rounded-circle d-flex align-items-center justify-content-center p-2"
+                    style={{
+                      width: "45px",
+                      height: "45px",
+                      border: "1px solid #ddd",
+                      background: "#fff",
+                    }}
+                    title="Register with Google"
+                  >
+                    <FcGoogle size={24} />
+                  </Button>
+                )}
+              />
 
               <Button
                 variant="outline-info"

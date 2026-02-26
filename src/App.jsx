@@ -1,6 +1,9 @@
 import { Route, Routes } from "react-router-dom";
 import { Navbar } from "./components/Navbar/Navbar";
 import { Login } from "./pages/Login/Login";
+// import { Register } from "./pages/Register/Register";
+// import { Register } from "./pages/Register/Register";
+// import { Register } from "./pages/Register/Register";
 import { Register } from "./pages/Register/Register";
 import { Container } from "react-bootstrap";
 import { Toaster } from "react-hot-toast";
@@ -16,6 +19,7 @@ import { Home } from "./pages/Home/Home";
 import Profile from "./pages/Profile/Profile";
 import UserProfile from "./components/UserProfile/UserProfile";
 import Connections from "./components/Connections/Connections";
+// import Notifications from "./components/Notifications/Notifications";
 export default function App() {
   const { isLoggedIn } = useSelector((state) => state.user);
 
@@ -71,6 +75,7 @@ export default function App() {
               {/* Auth Routes */}
               <Route path="/login" Component={Login} />
               <Route path="/register" Component={Register} />
+              
 
               {/* OTP Routes */}
               <Route path="/verify-otp" Component={VerifyOTP} />
@@ -90,7 +95,8 @@ export default function App() {
               <Route path="/profile" Component={Profile} />
               <Route path="/profile/:id" Component={UserProfile} /> 
               <Route path="/user/:id/connections" Component={Connections} />
-              <Route path="/profile/:username" Component={UserProfile} /> 
+              <Route path="/profile/:username" Component={UserProfile} />
+              {/* <Route path="/Notification" Component={Notifications} />  */}
             </>
           )}
         </Routes>
