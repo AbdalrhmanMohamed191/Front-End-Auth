@@ -1,9 +1,6 @@
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useLocation } from "react-router-dom";
 import { Navbar } from "./components/Navbar/Navbar";
 import { Login } from "./pages/Login/Login";
-// import { Register } from "./pages/Register/Register";
-// import { Register } from "./pages/Register/Register";
-// import { Register } from "./pages/Register/Register";
 import { Register } from "./pages/Register/Register";
 import { Container } from "react-bootstrap";
 import { Toaster } from "react-hot-toast";
@@ -19,9 +16,13 @@ import { Home } from "./pages/Home/Home";
 import Profile from "./pages/Profile/Profile";
 import UserProfile from "./components/UserProfile/UserProfile";
 import Connections from "./components/Connections/Connections";
+import ChatPage from "./components/ChatPage/ChatPage";
+import BottomNav from "./components/BottomNav/BottomNav";
+import Stories from "./components/Stories/Stories";
 // import Notifications from "./components/Notifications/Notifications";
 export default function App() {
   const { isLoggedIn } = useSelector((state) => state.user);
+  const location = useLocation();
 
   // Global Dispatch
   const dispatch = useDispatch();
@@ -31,6 +32,7 @@ export default function App() {
 
   useEffect(() => {
     // Check User Has Token Or Not "Still Logged?"
+    
     async function validateToken() {
       if (token) {
         try {
@@ -60,6 +62,8 @@ export default function App() {
     <div>
       {/* Global Navbar */}
       <Navbar />
+      {/* Story only for logged in users and on home page */}
+      {isLoggedIn && location.pathname === "/" && <Stories />}
       {/* Toaster */}
       <Toaster position="top-left" />
 
@@ -97,9 +101,13 @@ export default function App() {
               <Route path="/user/:id/connections" Component={Connections} />
               <Route path="/profile/:username" Component={UserProfile} />
               {/* <Route path="/Notification" Component={Notifications} />  */}
+              {/* <Route path="/Notification" Component={Notifications} /> */}
+              <Route path="/chat" element={<ChatPage />} />
+              {/* <Route path="/stories" Component={Stories } /> */}
             </>
           )}
         </Routes>
+        <BottomNav />
       </Container>
     </div>
   );

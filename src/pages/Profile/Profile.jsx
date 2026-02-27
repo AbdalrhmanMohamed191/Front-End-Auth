@@ -174,7 +174,8 @@ const Profile = () => {
               <img
                 // src={`${baseUrl}/${user.profileImage}`}
                 // src={user.profileImage.startsWith("http") ? user.profileImage : baseUrlHandler(user.profileImage)}
-                src={user.profileImage.startsWith("http") ? user.profileImage : `${baseUrl}/${user.profileImage}`}
+                // src={user.profileImage.startsWith("http") ? user.profileImage : `${baseUrl}/${user.profileImage}`}
+                src={user.profileImage?.startsWith("http") ? user.profileImage : `${baseUrl}/${user.profileImage || "default-profile"}`}
                 
                 alt="Profile"
                 className="rounded-circle border"

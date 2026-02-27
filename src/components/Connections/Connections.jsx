@@ -54,56 +54,107 @@ const Connections = () => {
   }, [location.search]);
 
   // جلب البيانات من API
-  useEffect(() => {
-    async function fetchConnections() {
-      try {
-        const res = await api.get(`/api/v1/user/${id}/connections`);
-        setFollowers(res.data.followers);
-        setFollowing(res.data.following);
-      } catch (err) {
-        errorHandler(err);
-      }
-    }
-    fetchConnections();
-  }, [id]);
+  // useEffect(() => {
+  //   async function fetchConnections() {
+  //     try {
+  //       const res = await api.get(`/api/v1/user/${id}/connections`);
+  //       setFollowers(res.data.followers);
+  //       setFollowing(res.data.following);
+  //     } catch (err) {
+  //       errorHandler(err);
+  //     }
+  //   }
+  //   fetchConnections();
+  // }, [id]);
+
+
+  const fetchConnections = async () => {
+  try {
+    const res = await api.get(`/api/v1/user/${id}/connections`);
+    setFollowers(res.data.followers || []);
+    setFollowing(res.data.following || []);
+  } catch (err) {
+    errorHandler(err);
+  }
+};
+
+useEffect(() => {
+  fetchConnections();
+}, [id]);
 
   // تابع Follow / Unfollow
+  // const handleFollow = async (targetId, isFollowing) => {
+  //   try {
+  //     const token = localStorage.getItem("token");
+  //     const url = isFollowing
+  //       ? `/api/v1/user/${targetId}/unfollow`
+  //       : `/api/v1/user/${targetId}/follow`;
+
+  //     const res = await api.patch(url, {}, { headers: { Authorization: `Bearer ${token}` } });
+
+  //     // تحديث الـ lists
+  //     const updateList = (list) =>
+  //       list.map((u) =>
+  //         u._id === targetId ? { ...u, followersCount: res.data.followersCount } : u
+  //       );
+
+  //     setFollowers((prev) => updateList(prev));
+  //     setFollowing((prev) => updateList(prev));
+
+  //     // تحديث الـ Redux
+  //     dispatch(
+  //       setUser({
+  //         ...user,
+  //         following: isFollowing
+  //           ? user.following.filter((u) => u !== targetId)
+  //           : [...user.following, targetId],
+  //       })
+  //     );
+
+  //     // إزالة من تاب "following" لو عمل unfollow
+  //     if (tab === "following" && isFollowing) {
+  //       setFollowing((prev) => prev.filter((u) => u._id !== targetId));
+  //     }
+  //   } catch (err) {
+  //     errorHandler(err);
+  //   }
+  // };
+
+
+
+
+
   const handleFollow = async (targetId, isFollowing) => {
-    try {
-      const token = localStorage.getItem("token");
-      const url = isFollowing
-        ? `/api/v1/user/${targetId}/unfollow`
-        : `/api/v1/user/${targetId}/follow`;
+  try {
+    const token = localStorage.getItem("token");
 
-      const res = await api.patch(url, {}, { headers: { Authorization: `Bearer ${token}` } });
+    const url = isFollowing
+      ? `/api/v1/user/${targetId}/unfollow`
+      : `/api/v1/user/${targetId}/follow`;
 
-      // تحديث الـ lists
-      const updateList = (list) =>
-        list.map((u) =>
-          u._id === targetId ? { ...u, followersCount: res.data.followersCount } : u
-        );
+    const res = await api.patch(
+      url,
+      {},
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
 
-      setFollowers((prev) => updateList(prev));
-      setFollowing((prev) => updateList(prev));
+    // ✅ تحديث Redux (IDs فقط)
+    dispatch(
+      setUser({
+        ...user,
+        following: isFollowing
+          ? user.following.filter((id) => id !== targetId)
+          : [...user.following, targetId],
+      })
+    );
 
-      // تحديث الـ Redux
-      dispatch(
-        setUser({
-          ...user,
-          following: isFollowing
-            ? user.following.filter((u) => u !== targetId)
-            : [...user.following, targetId],
-        })
-      );
+    // ✅ إعادة تحميل الليست
+    await fetchConnections();
 
-      // إزالة من تاب "following" لو عمل unfollow
-      if (tab === "following" && isFollowing) {
-        setFollowing((prev) => prev.filter((u) => u._id !== targetId));
-      }
-    } catch (err) {
-      errorHandler(err);
-    }
-  };
+  } catch (err) {
+    errorHandler(err);
+  }
+};
 
   const list = tab === "followers" ? followers : following;
 
