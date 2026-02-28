@@ -1,0 +1,38 @@
+/* wrapper عام */
+.chat-page-wrapper {
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Row */
+.chat-page-row {
+  height: 100%;
+}
+
+/* Chat list */
+.chat-list-col {
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* Chat window */
+.chat-window-col {
+  height: 100%;
+  padding: 0;
+}
+
+/* ========================= */
+/* 📱 Mobile fixes */
+@media (max-width: 768px) {
+  .chat-page-wrapper {
+    padding-bottom: 60px; /* مساحة للـ BottomNav */
+  }
+
+  .chat-page-row {
+    flex-direction: column;
+  }
+
+  .chat-list-col {
+    height: 100%;
+  }
+}

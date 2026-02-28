@@ -115,3 +115,28 @@
   from { width: 0%; }
   to { width: 100%; }
 }
+
+
+.story-add-btn {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 28px;           /* أكبر من قبل */
+  height: 28px;          /* أكبر من قبل */
+  border-radius: 50%;    /* دائرة كاملة */
+  background-color: #ff004f; /* لون مميز */
+  color: white;
+  border: 2px solid white;  /* إطار أبيض للتميز */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;       /* أكبر الخط */
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3); /* ظل خفيف */
+  transition: transform 0.2s ease;
+}
+
+.story-add-btn:hover {
+  transform: scale(1.1); /* يكبر قليلاً عند المرور */
+}

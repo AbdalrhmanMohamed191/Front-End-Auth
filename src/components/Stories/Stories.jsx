@@ -20,10 +20,19 @@ const Stories = () => {
   const timerRef = useRef(null);
   const [isPaused, setIsPaused] = useState(false);
 
+  // ===== Fetch Stories from users I follow =====
   const fetchStories = async () => {
     try {
       const res = await api.get("/api/v1/stories");
-      const formatted = (res.data || []).map((s) => ({
+      const allStories = res.data || [];
+
+      // Only show stories from users I follow or myself
+      const visibleStories = allStories.filter(
+        (s) =>
+          currentUser.following?.includes(s.user?._id) || s.user?._id === currentUser._id
+      );
+
+      const formatted = visibleStories.map((s) => ({
         id: s._id,
         username: s.user?.username || "Unknown",
         userImage: s.user?.profileImage
@@ -31,7 +40,11 @@ const Stories = () => {
             ? s.user.profileImage
             : `${baseUrl}/${s.user.profileImage}`
           : `${baseUrl}/default-avatar.png`,
-        image: s?.image ? (s.image.startsWith("http") ? s.image.replace(/\/\/uploads/, "/uploads") : `${baseUrl}/${s.image}`) : "",
+        image: s?.image
+          ? s.image.startsWith("http")
+            ? s.image.replace(/\/\/uploads/, "/uploads")
+            : `${baseUrl}/${s.image}`
+          : "",
         userId: s.user?._id || null,
         seenBy: s.seenBy || [],
         createdAt: s.createdAt,
@@ -51,12 +64,14 @@ const Stories = () => {
             userId: s.userId,
             username: s.username,
             userImage: s.userImage,
-            images: [{
-              image: s.image,
-              id: s.id,
-              seenBy: s.seenBy,
-              createdAt: s.createdAt,
-            }],
+            images: [
+              {
+                image: s.image,
+                id: s.id,
+                seenBy: s.seenBy,
+                createdAt: s.createdAt,
+              },
+            ],
           });
         }
       });
@@ -67,12 +82,19 @@ const Stories = () => {
     }
   };
 
-  //  WebSocket 
+  // ===== WebSocket Live Updates =====
   useEffect(() => {
     if (!currentUser?._id) return;
     fetchStories();
+
+    // Listen for new stories
     socket.on("new-story", fetchStories);
-    return () => socket.off("new-story");
+    socket.on("story-seen", fetchStories); // updates seen live
+
+    return () => {
+      socket.off("new-story");
+      socket.off("story-seen");
+    };
   }, [currentUser]);
 
   // ===== Open modal =====
@@ -80,7 +102,9 @@ const Stories = () => {
     const userStory = stories.find((s) => s.userId === userId);
     if (!userStory) return;
 
-    const sortedImages = [...userStory.images].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    const sortedImages = [...userStory.images].sort(
+      (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+    );
 
     setModalStories(sortedImages);
     setModalUserId(userId);
@@ -98,7 +122,7 @@ const Stories = () => {
     clearInterval(timerRef.current);
   };
 
-  //  Handle Next & Prev 
+  // ===== Handle Next & Prev =====
   const handleNext = () => {
     if (currentStoryIndex < modalStories.length - 1) {
       setCurrentStoryIndex(currentStoryIndex + 1);
@@ -115,17 +139,18 @@ const Stories = () => {
     else handleNext();
   };
 
-  //  Mark Seen 
+  // ===== Mark Seen =====
   const markSeen = async (storyId) => {
     try {
       await api.put(`/api/v1/stories/${storyId}/seen`, { userId: currentUser._id });
+      socket.emit("story-seen"); // notify others to refresh seen
       fetchStories();
     } catch (err) {
       console.error(err);
     }
   };
 
-  //  Auto next 
+  // ===== Auto Next =====
   useEffect(() => {
     if (!showModal) return;
     clearInterval(timerRef.current);
@@ -135,7 +160,7 @@ const Stories = () => {
     return () => clearInterval(timerRef.current);
   }, [showModal, currentStoryIndex, modalStories, isPaused]);
 
-  //  Add story 
+  // ===== Add story =====
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -152,13 +177,13 @@ const Stories = () => {
         : `${baseUrl}/${uploadRes.data.url}`;
 
       await api.post("/api/v1/stories", { image: imageUrl, user: currentUser._id });
+      socket.emit("new-story"); // notify followers live
       fetchStories();
     } catch (err) {
       console.error(err);
     }
   };
 
-  //  Format time 
   const formatTime = (time) => {
     const now = new Date();
     const created = new Date(time);
@@ -175,22 +200,44 @@ const Stories = () => {
         {currentUser && (
           <div className="story-circle add-story">
             <Image
-              src={currentUser.profileImage ? (currentUser.profileImage.startsWith("http") ? currentUser.profileImage : `${baseUrl}/${currentUser.profileImage}`) : `${baseUrl}/default-avatar.png`}
+              src={
+                currentUser.profileImage
+                  ? currentUser.profileImage.startsWith("http")
+                    ? currentUser.profileImage
+                    : `${baseUrl}/${currentUser.profileImage}`
+                  : `${baseUrl}/default-avatar.png`
+              }
               roundedCircle
               onClick={() => handleOpen(currentUser._id)}
             />
             <span className="story-username">You</span>
-            <Button className="story-add-btn" size="sm" onClick={() => document.getElementById("storyFile").click()}>+</Button>
-            <input type="file" id="storyFile" accept="image/*" style={{ display: "none" }} onChange={handleFileChange} />
+            <Button
+              className="story-add-btn"
+              size="sm"
+              onClick={() => document.getElementById("storyFile").click()}
+            >
+              +
+            </Button>
+            <input
+              type="file"
+              id="storyFile"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={handleFileChange}
+            />
           </div>
         )}
 
         {stories
-          .filter(s => s.userId !== currentUser?._id)
-          .map(story => {
-            const hasSeen = story.images.every(img => img.seenBy.includes(currentUser._id));
+          .filter((s) => s.userId !== currentUser?._id)
+          .map((story) => {
+            const hasSeen = story.images.every((img) => img.seenBy.includes(currentUser._id));
             return (
-              <div key={story.userId} className={`story-circle ${hasSeen ? "seen" : "unseen"}`} onClick={() => handleOpen(story.userId)}>
+              <div
+                key={story.userId}
+                className={`story-circle ${hasSeen ? "seen" : "unseen"}`}
+                onClick={() => handleOpen(story.userId)}
+              >
                 <Image src={story.userImage} roundedCircle />
                 <span className="story-username">{story.username}</span>
               </div>
@@ -212,14 +259,17 @@ const Stories = () => {
             <>
               <Image src={modalStories[currentStoryIndex].image} fluid alt="Story" />
 
-              {/* Header: progress + time */}
               <div className="story-header">
                 <div className="story-progress-container">
                   {modalStories.map((_, index) => (
                     <div
                       key={index}
                       className={`story-progress-bar ${
-                        index < currentStoryIndex ? "filled" : index === currentStoryIndex ? "active" : ""
+                        index < currentStoryIndex
+                          ? "filled"
+                          : index === currentStoryIndex
+                          ? "active"
+                          : ""
                       }`}
                     >
                       <div className="fill"></div>
